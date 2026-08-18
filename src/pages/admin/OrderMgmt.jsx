@@ -1,122 +1,122 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import axios from 'axios';
+import { AuthContext } from '../../context/AuthContext';
 
-function OrderMgmt({ orders = [], onUpdateOrderStatus }) {
-  const [selectedOrder, setSelectedOrder] = useState(null);
+const OrderMgmt = () => {
+  const { token } = useContext(AuthContext);
 
-  const statusColors = {
-    Pending: '#ffc107',
-    Processing: '#17a2b8',
-    Shipped: '#007bff',
-    Delivered: '#28a745',
-    Cancelled: '#dc3545'
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [updatingId, setUpdatingId] = useState(null);
+
+  const authHeader = {
+    headers: { Authorization: `Bearer ${token}` }
   };
 
-  return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '20px', fontFamily: 'sans-serif' }}>
-      <h2>Order Management</h2>
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get('http://localhost:5000/api/admin/orders', authHeader);
+      setOrders(response.data);
+    } catch (err) {
+      setError('Failed to fetch store orders.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      {/* Orders Summary Table */}
-      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-        <thead>
-          <tr style={{ backgroundColor: '#f4f4f4', borderBottom: '2px solid #ddd', textAlign: 'left' }}>
-            <th style={{ padding: '12px' }}>Order ID</th>
-            <th style={{ padding: '12px' }}>Customer</th>
-            <th style={{ padding: '12px' }}>Total Amount</th>
-            <th style={{ padding: '12px' }}>Date</th>
-            <th style={{ padding: '12px' }}>Status</th>
-            <th style={{ padding: '12px' }}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {orders.length === 0 ? (
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const handleStatusChange = async (orderId, newStatus) => {
+    setUpdatingId(orderId);
+    try {
+      await axios.put(
+        `http://localhost:5000/api/admin/orders/${orderId}/status`,
+        { status: newStatus },
+        authHeader
+      );
+      // Update status locally in state
+      setOrders((prev) =>
+        prev.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o))
+      );
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to update order status');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  if (loading) return <div className="loader-container">Loading orders...</div>;
+
+  return (
+    <div className="admin-page-container">
+      <h2>Order Management</h2>
+      {error && <p className="error-banner">{error}</p>}
+
+      <div className="admin-table-wrapper">
+        <table className="admin-table">
+          <thead>
             <tr>
-              <td colSpan="6" style={{ padding: '20px', textAlign: 'center', color: '#777' }}>
-                No orders placed yet.
-              </td>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Total Amount</th>
+              <th>Payment</th>
+              <th>Status</th>
+              <th>Update Status</th>
             </tr>
-          ) : (
-            orders.map((order) => (
-              <tr key={order.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '12px' }}><strong>#{order.id}</strong></td>
-                <td style={{ padding: '12px' }}>{order.customerName || 'Guest User'}</td>
-                <td style={{ padding: '12px' }}>₹{order.totalAmount}</td>
-                <td style={{ padding: '12px' }}>{order.date || new Date().toLocaleDateString()}</td>
-                <td style={{ padding: '12px' }}>
+          </thead>
+          <tbody>
+            {orders.map((order) => (
+              <tr key={order._id}>
+                <td><strong>#{order._id.substring(order._id.length - 6)}</strong></td>
+                <td>
+                  <div>{order.user?.name || 'Guest'}</div>
+                  <small style={{ color: '#6b7280' }}>{order.shippingAddress?.phone}</small>
+                </td>
+                <td>
+                  {order.orderItems?.map((i, idx) => (
+                    <div key={idx} style={{ fontSize: '0.85rem' }}>
+                      {i.name} (×{i.quantity})
+                    </div>
+                  ))}
+                </td>
+                <td><strong>₹{order.totalAmount?.toLocaleString('en-IN')}</strong></td>
+                <td>{order.paymentMethod}</td>
+                <td>
+                  <span className={`status-badge status-${(order.status || 'pending').toLowerCase()}`}>
+                    {order.status || 'Pending'}
+                  </span>
+                </td>
+                <td>
                   <select
                     value={order.status}
-                    onChange={(e) => onUpdateOrderStatus && onUpdateOrderStatus(order.id, e.target.value)}
-                    style={{
-                      padding: '6px 10px',
-                      borderRadius: '4px',
-                      border: '1px solid #ccc',
-                      backgroundColor: statusColors[order.status] || '#f8f9fa',
-                      color: order.status === 'Pending' ? '#000' : '#fff',
-                      fontWeight: 'bold',
-                      cursor: 'pointer'
-                    }}
+                    disabled={updatingId === order._id}
+                    onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                    className="filter-select"
+                    style={{ padding: '4px 8px', fontSize: '0.85rem' }}
                   >
-                    <option value="Pending" style={{ background: '#fff', color: '#000' }}>Pending</option>
-                    <option value="Processing" style={{ background: '#fff', color: '#000' }}>Processing</option>
-                    <option value="Shipped" style={{ background: '#fff', color: '#000' }}>Shipped</option>
-                    <option value="Delivered" style={{ background: '#fff', color: '#000' }}>Delivered</option>
-                    <option value="Cancelled" style={{ background: '#fff', color: '#000' }}>Cancelled</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Cancelled">Cancelled</option>
                   </select>
                 </td>
-                <td style={{ padding: '12px' }}>
-                  <button
-                    onClick={() => setSelectedOrder(order)}
-                    style={{
-                      padding: '6px 12px',
-                      backgroundColor: '#007bff',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    View Details
-                  </button>
-                </td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-
-      {/* Order Detail Modal */}
-      {selectedOrder && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center'
-        }}>
-          <div style={{ background: '#fff', padding: '24px', borderRadius: '8px', maxWidth: '600px', width: '100%' }}>
-            <h3>Order Details - #{selectedOrder.id}</h3>
-            <p><strong>Customer:</strong> {selectedOrder.customerName}</p>
-            <p><strong>Shipping Address:</strong> {selectedOrder.address || 'N/A'}</p>
-            
-            <h4>Items Ordered:</h4>
-            <ul>
-              {selectedOrder.items?.map((item, idx) => (
-                <li key={idx}>
-                  {item.title} x {item.quantity} - ₹{item.price * item.quantity}
-                </li>
-              ))}
-            </ul>
-
-            <button
-              onClick={() => setSelectedOrder(null)}
-              style={{
-                marginTop: '16px', padding: '8px 16px', backgroundColor: '#6c757d',
-                color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer'
-              }}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+            ))}
+            {orders.length === 0 && (
+              <tr>
+                <td colSpan="7" style={{ textAlign: 'center' }}>No orders placed yet.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
-}
+};
 
 export default OrderMgmt;

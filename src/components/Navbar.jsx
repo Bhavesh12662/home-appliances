@@ -1,42 +1,54 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+// Change these two lines:
+import { AuthContext } from '../context/AuthContext';
+import { CartContext } from '../context/CartContext';
 
-function Navbar({ user, onLogout }) {
+const Navbar = () => {
+  const { user, logout } = useContext(AuthContext);
+  const { totalItemsCount } = useContext(CartContext);
   const navigate = useNavigate();
 
-  const handleLogoutClick = () => {
-    onLogout();
+  const handleLogout = () => {
+    logout();
     navigate('/login');
   };
 
   return (
-    <nav style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', background: '#f10303', color: '#fff' }}>
-      <div>
-        <Link to="/" style={{ color: '#fff', textDecoration: 'none', fontWeight: 'bold', fontSize: '1.2rem' }}>
-          Home Appliances Store
+    <nav className="main-navbar">
+      <div className="navbar-container">
+        {/* Brand Logo */}
+        <Link to="/" className="navbar-logo">
+          ⚡ HomeAppliances
         </Link>
-      </div>
-      <div style={{ display: 'flex', gap: '15px',}}>
-        <Link to="/" style={{ color: '#fff', textDecoration: 'none' }}>Products</Link>
-        <Link to="/cart" style={{ color: '#fff', textDecoration: 'none' }}>Cart</Link>
-        
-        {user ? (
-          <>
-            <Link to="/my-orders" style={{ color: '#fff', textDecoration: 'none' }}>My Orders</Link>
-            <Link to="/profile" style={{ color: '#fff', textDecoration: 'none' }}>Profile</Link>
-            <button onClick={handleLogoutClick} style={{ background: '#e74c3c', color: '#fff', border: 'none', padding: '5px 10px', cursor: 'pointer' }}>
-              Logout
-            </button>
-          </>
-        ) : (
-          <>
-            <Link to="/login" style={{ color: '#fff', textDecoration: 'none' }}>Login</Link>
-            <Link to="/register" style={{ color: '#fff', textDecoration: 'none' }}>Register</Link>
-          </>
-        )}
+
+        {/* Links */}
+        <div className="navbar-links">
+          <Link to="/" className="nav-link">Home</Link>
+
+          {/* Cart Icon & Badge */}
+          <Link to="/cart" className="nav-link cart-link">
+            Cart
+            {totalItemsCount > 0 && <span className="cart-badge">{totalItemsCount}</span>}
+          </Link>
+
+          {/* Conditional Auth Links */}
+          {user ? (
+            <div className="nav-user-menu">
+              <Link to="/my-orders" className="nav-link">My Orders</Link>
+              <Link to="/profile" className="nav-link">Profile ({user.name?.split(' ')[0]})</Link>
+              <button onClick={handleLogout} className="logout-btn">Logout</button>
+            </div>
+          ) : (
+            <div className="nav-auth-buttons">
+              <Link to="/login" className="nav-link">Login</Link>
+              <Link to="/register" className="nav-btn-register">Register</Link>
+            </div>
+          )}
+        </div>
       </div>
     </nav>
   );
-}
+};
 
 export default Navbar;

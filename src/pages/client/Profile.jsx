@@ -1,127 +1,158 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import axios from 'axios';
+import { AuthContext } from '../../context/AuthContext';
 
+const Profile = () => {
+  const { user, token } = useContext(AuthContext);
 
-function Profile({ user, onUpdateProfile }) {
-  const [profileData, setProfileData] = useState({
-    name: user ? user.name : '',
-    email: user ? user.email : '',
-    phone: user ? user.phone || '9664977619' : '',
-    streetAddress: user ? user.streetAddress || '' : '',
-    city: user ? user.city || '' : '',
-    state: user ? user.state || '' : '',
-    pincode: user ? user.pincode || '' : ''
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmNewPassword: ''
   });
 
-  const [message, setMessage] = useState('');
+  const [errors, setErrors] = useState({});
+  const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setProfileData({ ...profileData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (onUpdateProfile) {
-      onUpdateProfile(profileData);
+    const { name, value } = e.target;
+    setPasswordData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
     }
-    setMessage('Profile and delivery address updated successfully!');
   };
 
-  if (!user) {
-    return <div className="profile-container"><p>Please log in to view your profile.</p></div>;
-  }
+  const validatePassword = () => {
+    const newErrors = {};
+    if (!passwordData.currentPassword) newErrors.currentPassword = 'Current password is required';
+    if (!passwordData.newPassword) {
+      newErrors.newPassword = 'New password is required';
+    } else if (passwordData.newPassword.length < 6) {
+      newErrors.newPassword = 'Password must be at least 6 characters';
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmNewPassword) {
+      newErrors.confirmNewPassword = 'Passwords do not match';
+    }
+    return newErrors;
+  };
+
+  const handlePasswordUpdate = async (e) => {
+    e.preventDefault();
+    setStatusMessage({ type: '', text: '' });
+
+    const validationErrors = validatePassword();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      };
+
+      await axios.put('http://localhost:5000/api/auth/update-password', {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
+      }, config);
+
+      setStatusMessage({ type: 'success', text: 'Password updated successfully!' });
+      setPasswordData({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
+    } catch (err) {
+      setStatusMessage({ 
+        type: 'error', 
+        text: err.response?.data?.message || 'Failed to update password.' 
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="profile-container">
-      <h2 className="profile-title">User Profile</h2>
-      {message && <div className="success-alert">{message}</div>}
+      <h2>My Account Profile</h2>
 
-      <form onSubmit={handleSubmit}>
-        <h3 className="section-divider">Personal Details</h3>
-        <div className="form-group">
-          <label>Full Name:</label>
-          <input
-            type="text"
-            name="name"
-            className="form-control"
-            value={profileData.name}
-            onChange={handleChange}
-          />
+      {statusMessage.text && (
+        <div className={statusMessage.type === 'success' ? 'success-banner' : 'error-banner'}>
+          {statusMessage.text}
+        </div>
+      )}
+
+      <div className="profile-grid">
+        {/* User Info Overview */}
+        <div className="profile-card">
+          <h3>Personal Details</h3>
+          <div className="profile-field">
+            <label>Name:</label>
+            <p>{user?.name || 'N/A'}</p>
+          </div>
+          <div className="profile-field">
+            <label>Email:</label>
+            <p>{user?.email || 'N/A'}</p>
+          </div>
+          <div className="profile-field">
+            <label>Phone Number:</label>
+            <p>{user?.phone || 'N/A'}</p>
+          </div>
+          <div className="profile-field">
+            <label>Role:</label>
+            <p>{user?.role || 'Customer'}</p>
+          </div>
         </div>
 
-        <div className="form-group">
-          <label>Email Address:</label>
-          <input
-            type="email"
-            name="email"
-            className="form-control"
-            value={profileData.email}
-            disabled
-          />
-        </div>
+        {/* Change Password Box */}
+        <div className="profile-card">
+          <h3>Change Password</h3>
+          <form onSubmit={handlePasswordUpdate} noValidate>
+            <div className="form-group">
+              <label>Current Password</label>
+              <input
+                type="password"
+                name="currentPassword"
+                value={passwordData.currentPassword}
+                onChange={handleChange}
+                placeholder="••••••••"
+              />
+              {errors.currentPassword && <span className="field-error">{errors.currentPassword}</span>}
+            </div>
 
-        <div className="form-group">
-          <label>Phone Number:</label>
-          <input
-            type="text"
-            name="phone"
-            className="form-control"
-            value={profileData.phone}
-            onChange={handleChange}
-          />
-        </div>
+            <div className="form-group">
+              <label>New Password</label>
+              <input
+                type="password"
+                name="newPassword"
+                value={passwordData.newPassword}
+                onChange={handleChange}
+                placeholder="••••••••"
+              />
+              {errors.newPassword && <span className="field-error">{errors.newPassword}</span>}
+            </div>
 
-        <h3 className="section-divider">Saved Address</h3>
-        <div className="form-group">
-          <label>Street Address:</label>
-          <textarea
-            name="streetAddress"
-            className="form-control"
-            rows="2"
-            value={profileData.streetAddress}
-            onChange={handleChange}
-            placeholder="Flat/House No., Building, Street"
-          />
-        </div>
+            <div className="form-group">
+              <label>Confirm New Password</label>
+              <input
+                type="password"
+                name="confirmNewPassword"
+                value={passwordData.confirmNewPassword}
+                onChange={handleChange}
+                placeholder="••••••••"
+              />
+              {errors.confirmNewPassword && <span className="field-error">{errors.confirmNewPassword}</span>}
+            </div>
 
-        <div className="form-group">
-          <label>City:</label>
-          <input
-            type="text"
-            name="city"
-            className="form-control"
-            value={profileData.city}
-            onChange={handleChange}
-          />
+            <button type="submit" disabled={loading} className="btn-primary">
+              {loading ? 'Updating...' : 'Update Password'}
+            </button>
+          </form>
         </div>
-
-        <div className="form-group">
-          <label>State:</label>
-          <input
-            type="text"
-            name="state"
-            className="form-control"
-            value={profileData.state}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Pincode:</label>
-          <input
-            type="text"
-            name="pincode"
-            className="form-control"
-            value={profileData.pincode}
-            onChange={handleChange}
-          />
-        </div>
-
-        <button type="submit" className="btn-primary">
-          Save Changes
-        </button>
-      </form>
+      </div>
     </div>
   );
-}
+};
 
 export default Profile;

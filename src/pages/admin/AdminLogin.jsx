@@ -1,90 +1,87 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Admin.css';
+import axios from 'axios';
+import { AuthContext } from '../../context/AuthContext';
 
-function AdminLogin({ onAdminLogin }) {
+const AdminLogin = () => {
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
-  const [credentials, setCredentials] = useState({
-    username: '',
-    password: ''
+  const [formData, setFormData] = useState({
+    email: 'bhhavesh@gmail.com',
+    password: '12345'
   });
 
-  const [errors, setErrors] = useState({});
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setCredentials({ ...credentials, [e.target.name]: e.target.value });
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setError('');
   };
 
-  const validateForm = () => {
-    let formErrors = {};
-
-    if (!credentials.username.trim()) {
-      formErrors.username = 'Admin username is required';
-    }
-
-    if (!credentials.password) {
-      formErrors.password = 'Password is required';
-    }
-
-    setErrors(formErrors);
-    return Object.keys(formErrors).length === 0;
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      // Hardcoded Admin Authentication Check
-      if (credentials.username === 'admin' && credentials.password === 'admin123') {
-        const adminUser = { username: 'admin', role: 'admin' };
-        onAdminLogin(adminUser);
-        alert('Admin Login Successful!');
-        navigate('/admin/dashboard');
-      } else {
-        setErrors({ auth: 'Invalid Admin Credentials (Use admin / admin123)' });
+    setError('');
+
+    if (!formData.email || !formData.password) {
+      setError('Please provide both email and password.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.post('http://localhost:5000/api/auth/admin-login', formData);
+
+      // Verify the user received is an administrator
+      if (response.data.user?.role !== 'admin') {
+        setError('Access Denied: You do not possess administrator rights.');
+        return;
       }
+
+      login(response.data.user, response.data.token);
+      navigate('/admin/dashboard');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Invalid administrator credentials.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="admin-login-container">
-      <h2 className="admin-login-title">Admin Panel Login</h2>
+    <div className="auth-container admin-auth-container">
+      <h2>Admin Control Center</h2>
+      {error && <p className="error-banner">{error}</p>}
 
-      {errors.auth && <div className="error-text" style={{ textAlign: 'center', marginBottom: '15px' }}>{errors.auth}</div>}
-
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         <div className="form-group">
-          <label>Admin Username:</label>
+          <label>Admin Email</label>
           <input
-            type="text"
-            name="username"
-            className="form-control"
-            value={credentials.username}
+            type="email"
+            name="email"
+            value={formData.email}
             onChange={handleChange}
-            placeholder="admin"
+            placeholder="admin@appliances.com"
           />
-          {errors.username && <span className="error-text">{errors.username}</span>}
         </div>
 
         <div className="form-group">
-          <label>Password:</label>
+          <label>Password</label>
           <input
             type="password"
             name="password"
-            className="form-control"
-            value={credentials.password}
+            value={formData.password}
             onChange={handleChange}
-            placeholder="admin123"
+            placeholder="••••••••"
           />
-          {errors.password && <span className="error-text">{errors.password}</span>}
         </div>
 
-        <button type="submit" className="btn-admin-submit">
-          Login to Dashboard
+        <button type="submit" disabled={loading} className="btn-primary">
+          {loading ? 'Verifying...' : 'Access Dashboard'}
         </button>
       </form>
     </div>
   );
-}
+};
 
 export default AdminLogin;

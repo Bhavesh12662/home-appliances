@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useContext } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
+import { AuthContext } from '../../context/AuthContext';
 
-function Register() {
+const Register = () => {
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
+  // Form input state
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -12,132 +16,162 @@ function Register() {
     confirmPassword: ''
   });
 
+  // Validation error state
   const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Form input change handler
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear validation error when user types
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
   };
 
-  const validateForm = () => {
-    let formErrors = {};
+  // Validation rules
+  const validate = () => {
+    const newErrors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^[0-9]{10}$/;
 
     if (!formData.name.trim()) {
-      formErrors.name = 'Full Name is required';
+      newErrors.name = 'Full name is required';
     }
 
     if (!formData.email.trim()) {
-      formErrors.email = 'Email address is required';
+      newErrors.email = 'Email address is required';
     } else if (!emailRegex.test(formData.email)) {
-      formErrors.email = 'Enter a valid email address';
+      newErrors.email = 'Enter a valid email address';
     }
 
     if (!formData.phone.trim()) {
-      formErrors.phone = 'Phone number is required';
+      newErrors.phone = 'Phone number is required';
     } else if (!phoneRegex.test(formData.phone)) {
-      formErrors.phone = 'Phone number must be exactly 10 digits';
+      newErrors.phone = 'Enter a valid 10-digit phone number';
     }
 
     if (!formData.password) {
-      formErrors.password = 'Password is required';
+      newErrors.password = 'Password is required';
     } else if (formData.password.length < 6) {
-      formErrors.password = 'Password must be at least 6 characters long';
+      newErrors.password = 'Password must be at least 6 characters';
     }
 
     if (formData.password !== formData.confirmPassword) {
-      formErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = 'Passwords do not match';
     }
 
-    setErrors(formErrors);
-    return Object.keys(formErrors).length === 0;
+    return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  // Form submit handler
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      console.log('Registration Data Submitted:', formData);
-      alert('Registration successful! Please log in.');
-      navigate('/login');
+    setServerError('');
+
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await axios.post('http://localhost:5000/api/auth/register', {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password
+      });
+
+      // Automatically log the user in upon successful registration
+      login(response.data.user, response.data.token);
+      navigate('/');
+    } catch (err) {
+      setServerError(err.response?.data?.message || 'Registration failed. Try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '40px auto', padding: '20px', border: '1px solid #ddd', borderRadius: '8px' }}>
-      <h2>Client Registration</h2>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '15px' }}>
-          <label>Full Name:</label>
+    <div className="auth-container">
+      <h2>Create an Account</h2>
+      {serverError && <p className="error-banner">{serverError}</p>}
+      
+      <form onSubmit={handleSubmit} noValidate>
+        <div className="form-group">
+          <label>Full Name</label>
           <input
             type="text"
             name="name"
             value={formData.name}
             onChange={handleChange}
-            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+            placeholder="John Doe"
           />
-          {errors.name && <span style={{ color: 'red', fontSize: '12px' }}>{errors.name}</span>}
+          {errors.name && <span className="field-error">{errors.name}</span>}
         </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label>Email Address:</label>
+        <div className="form-group">
+          <label>Email Address</label>
           <input
             type="email"
             name="email"
             value={formData.email}
             onChange={handleChange}
-            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+            placeholder="john@example.com"
           />
-          {errors.email && <span style={{ color: 'red', fontSize: '12px' }}>{errors.email}</span>}
+          {errors.email && <span className="field-error">{errors.email}</span>}
         </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label>Phone Number:</label>
+        <div className="form-group">
+          <label>Phone Number</label>
           <input
-            type="text"
+            type="tel"
             name="phone"
             value={formData.phone}
             onChange={handleChange}
-            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+            placeholder="9876543210"
           />
-          {errors.phone && <span style={{ color: 'red', fontSize: '12px' }}>{errors.phone}</span>}
+          {errors.phone && <span className="field-error">{errors.phone}</span>}
         </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label>Password:</label>
+        <div className="form-group">
+          <label>Password</label>
           <input
             type="password"
             name="password"
             value={formData.password}
             onChange={handleChange}
-            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+            placeholder="••••••••"
           />
-          {errors.password && <span style={{ color: 'red', fontSize: '12px' }}>{errors.password}</span>}
+          {errors.password && <span className="field-error">{errors.password}</span>}
         </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label>Confirm Password:</label>
+        <div className="form-group">
+          <label>Confirm Password</label>
           <input
             type="password"
             name="confirmPassword"
             value={formData.confirmPassword}
             onChange={handleChange}
-            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+            placeholder="••••••••"
           />
-          {errors.confirmPassword && <span style={{ color: 'red', fontSize: '12px' }}>{errors.confirmPassword}</span>}
+          {errors.confirmPassword && <span className="field-error">{errors.confirmPassword}</span>}
         </div>
 
-        <button type="submit" style={{ width: '100%', padding: '10px', backgroundColor: '#007bff', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-          Register
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Registering...' : 'Register'}
         </button>
       </form>
-      <p style={{ marginTop: '15px', textAlign: 'center' }}>
+
+      <p>
         Already have an account? <Link to="/login">Login here</Link>
       </p>
     </div>
   );
-}
+};
 
 export default Register;

@@ -1,186 +1,113 @@
-import React, { useState,useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
+import { CartContext } from '../../context/CartContext';
 
-
-function ProductDetails({ products, onAddToCart,user }) {
+const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { addToCart } = useContext(CartContext);
+
+  const [product, setProduct] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [addedMessage, setAddedMessage] = useState(false);
+
   useEffect(() => {
-    if (!user) {
-      alert('You must be logged in to place an order.');
-      navigate('/login');
-    }
-  }, [user, navigate])
+    const fetchProduct = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(`http://localhost:5000/api/products/${id}`);
+        setProduct(response.data);
+      } catch (err) {
+        setError('Product not found or unable to load details.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const [activeTab, setActiveTab] = useState('description');
-  const [pincode, setPincode] = useState('');
-  const [deliveryMessage, setDeliveryMessage] = useState('');
+    fetchProduct();
+  }, [id]);
 
-  const product = products.find((p) => p.id === parseInt(id));
-
-  if (!product) {
-    return (
-      <div className="product-details-container" style={{ textAlign: 'center' }}>
-        <h3>Product not found</h3>
-        <button onClick={() => navigate('/')}>Back to Products</button>
-      </div>
-    );
-  }
-
-  // Calculate dummy original price and discount percentage
-  const originalPrice = Math.round(product.price * 1.2);
-  const discountPercent = Math.round(((originalPrice - product.price) / originalPrice) * 100);
-
-  const handleBuyNow = () => {
-    onAddToCart(product);
-    navigate('/checkout');
-  };
-
-  const handleCheckDelivery = () => {
-    if (/^\d{6}$/.test(pincode)) {
-      setDeliveryMessage(`Standard Delivery available to ${pincode} within 3-5 business days.`);
-    } else {
-      setDeliveryMessage('Please enter a valid 6-digit Pincode.');
+  const handleQuantityChange = (type) => {
+    if (!product) return;
+    if (type === 'inc' && quantity < product.stock) {
+      setQuantity((prev) => prev + 1);
+    } else if (type === 'dec' && quantity > 1) {
+      setQuantity((prev) => prev - 1);
     }
   };
+
+  const handleAddToCart = () => {
+    if (!product || product.stock <= 0) return;
+    addToCart(product, quantity);
+    setAddedMessage(true);
+    setTimeout(() => setAddedMessage(false), 2500);
+  };
+
+  if (loading) return <div className="loader-container">Loading appliance specifications...</div>;
+  if (error || !product) return <div className="error-container"><p>{error}</p><Link to="/">Back to Home</Link></div>;
 
   return (
     <div className="product-details-container">
-      {/* Top Section: Image & Main Info */}
-      <div className="product-top-section">
-        <div className="product-image-container">
-          <img
-            src={product.image || 'https://via.placeholder.com/300'}
-            alt={product.title}
-            className="product-detail-image"
+      <button className="back-btn" onClick={() => navigate(-1)}>
+        &larr; Back to Catalog
+      </button>
+
+      <div className="product-details-grid">
+        {/* Product Image */}
+        <div className="details-image-box">
+          <img 
+            src={product.image || 'https://via.placeholder.com/500x400?text=Home+Appliance'} 
+            alt={product.name} 
+            className="details-image"
           />
         </div>
 
-        <div className="product-info-container">
-          <h1 className="product-title-text">{product.title}</h1>
-          <p className="product-brand-category">
-            Brand: <strong>{product.brand}</strong> | Category: <strong>{product.category}</strong>
-          </p>
-
-          <div className="price-section">
-            <span className="current-price">₹{product.price}</span>
-            <span className="mrp-price">₹{originalPrice}</span>
-            <span className="discount-badge">{discountPercent}% OFF</span>
+        {/* Product Meta & Actions */}
+        <div className="details-info-box">
+          <span className="brand-badge">{product.brand?.name}</span>
+          <h1>{product.name}</h1>
+          <p className="category-tag">Category: {product.category?.name}</p>
+          
+          <div className="price-tag">
+            ₹{product.price?.toLocaleString('en-IN')}
           </div>
 
-          <div className="offers-box">
-            <h4>Available Offers:</h4>
-            <ul>
-              <li>Bank Offer: 10% Instant Discount on select Credit Cards.</li>
-              <li>No Cost EMI: Available on orders above ₹5,000.</li>
-              <li>Brand Warranty: 1 Year Manufacturer Warranty on Product.</li>
-            </ul>
+          <div className="stock-info">
+            Status: {product.stock > 0 ? (
+              <span className="in-stock-label">{product.stock} Units Available</span>
+            ) : (
+              <span className="out-of-stock-label">Currently Out of Stock</span>
+            )}
           </div>
 
-          <div className="action-buttons">
-            <button className="btn-add-cart" onClick={() => onAddToCart(product)}>
-              Add to Cart
-            </button>
-            <button className="btn-buy-now" onClick={handleBuyNow}>
-              Buy Now
-            </button>
+          <div className="product-description">
+            <h3>Overview</h3>
+            <p>{product.description || 'No detailed specifications provided for this model.'}</p>
           </div>
 
-          <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontWeight: 'bold', fontSize: '0.9rem' }}>
-              Delivery Options:
-            </label>
-            <div className="pincode-check-box">
-              <input
-                type="text"
-                className="pincode-input"
-                placeholder="Enter 6-digit Pincode"
-                value={pincode}
-                onChange={(e) => setPincode(e.target.value)}
-              />
-              <button className="btn-check-pin" onClick={handleCheckDelivery}>
-                Check
+          {/* Add to Cart Actions */}
+          {product.stock > 0 && (
+            <div className="cart-action-panel">
+              <div className="quantity-controller">
+                <button onClick={() => handleQuantityChange('dec')} disabled={quantity <= 1}>-</button>
+                <span>{quantity}</span>
+                <button onClick={() => handleQuantityChange('inc')} disabled={quantity >= product.stock}>+</button>
+              </div>
+
+              <button className="add-to-cart-btn" onClick={handleAddToCart}>
+                Add to Cart
               </button>
             </div>
-            {deliveryMessage && <p style={{ fontSize: '0.85rem', color: '#333' }}>{deliveryMessage}</p>}
-          </div>
+          )}
+
+          {addedMessage && <p className="success-banner">Item added to your cart!</p>}
         </div>
-      </div>
-
-      {/* Bottom Section: Tabs for Detailed Info */}
-      <div className="product-tabs-header">
-        <button
-          className={`tab-button ${activeTab === 'description' ? 'active' : ''}`}
-          onClick={() => setActiveTab('description')}
-        >
-          Description
-        </button>
-        <button
-          className={`tab-button ${activeTab === 'specifications' ? 'active' : ''}`}
-          onClick={() => setActiveTab('specifications')}
-        >
-          Specifications
-        </button>
-        <button
-          className={`tab-button ${activeTab === 'terms' ? 'active' : ''}`}
-          onClick={() => setActiveTab('terms')}
-        >
-          Terms & Conditions
-        </button>
-      </div>
-
-      <div className="tab-content">
-        {activeTab === 'description' && (
-          <div>
-            <p>
-              Upgrade your home with the high-performance <strong>{product.title}</strong> by {product.brand}. Designed for maximum efficiency, durability, and modern aesthetics, this appliance seamlessly integrates into your modern lifestyle.
-            </p>
-            <ul>
-              <li>Energy-efficient operation certified with high rating standards.</li>
-              <li>Durable outer build designed for longevity and easy maintenance.</li>
-              <li>Includes safety locks and smart overload protection features.</li>
-            </ul>
-          </div>
-        )}
-
-        {activeTab === 'specifications' && (
-          <table className="specs-table">
-            <tbody>
-              <tr>
-                <td>Model Name</td>
-                <td>{product.title}</td>
-              </tr>
-              <tr>
-                <td>Brand</td>
-                <td>{product.brand}</td>
-              </tr>
-              <tr>
-                <td>Category</td>
-                <td>{product.category}</td>
-              </tr>
-              <tr>
-                <td>Power Source</td>
-                <td>Electric (220-240V)</td>
-              </tr>
-              <tr>
-                <td>Warranty Summary</td>
-                <td>1 Year Comprehensive + Additional Compressor/Motor Warranty</td>
-              </tr>
-            </tbody>
-          </table>
-        )}
-
-        {activeTab === 'terms' && (
-          <ul className="terms-list">
-            <li><strong>Return Policy:</strong> 7-day replacement guarantee in case of manufacturing defects or damage during transit.</li>
-            <li><strong>Installation:</strong> Free installation provided by brand technicians within 48 hours of delivery (where applicable).</li>
-            <li><strong>Warranty Terms:</strong> Warranty covers defects in materials and workmanship under normal household use. Physical damage is not covered.</li>
-            <li><strong>Cancellation:</strong> Orders can be canceled before shipment dispatch for a 100% refund.</li>
-          </ul>
-        )}
       </div>
     </div>
   );
-}
+};
 
 export default ProductDetails;
