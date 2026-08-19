@@ -8,8 +8,8 @@ const AdminLogin = () => {
   const { login } = useContext(AuthContext);
 
   const [formData, setFormData] = useState({
-    email: 'bhhavesh@gmail.com',
-    password: '12345'
+    email: '',
+    password: ''
   });
 
   const [error, setError] = useState('');

@@ -5,7 +5,6 @@ import { AuthContext } from '../../context/AuthContext';
 
 const Dashboard = () => {
   const { token } = useContext(AuthContext);
-
   const [stats, setStats] = useState({
     totalProducts: 0,
     totalOrders: 0,
@@ -13,89 +12,85 @@ const Dashboard = () => {
     totalCategories: 0,
     totalRevenue: 0
   });
-
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   useEffect(() => {
-    const fetchDashboardStats = async () => {
-      setLoading(true);
+    const fetchStats = async () => {
       try {
-        const config = {
+        const res = await axios.get('http://localhost:5000/api/admin/stats', {
           headers: { Authorization: `Bearer ${token}` }
-        };
-        const response = await axios.get('http://localhost:5000/api/admin/stats', config);
-        setStats(response.data);
+        });
+        setStats(res.data);
       } catch (err) {
-        setError('Failed to fetch dashboard metrics.');
+        console.error('Failed to load dashboard stats', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchDashboardStats();
+    fetchStats();
   }, [token]);
 
-  if (loading) return <div className="loader-container">Loading Dashboard Metrics...</div>;
-  if (error) return <div className="error-banner">{error}</div>;
+  if (loading) return <div className="admin-loading">Loading Dashboard Metrics...</div>;
 
   return (
-    <div className="admin-dashboard-container">
-      <div className="dashboard-header">
-        <h2>Admin Overview</h2>
-        <span className="admin-badge">Administrator Panel</span>
+    <div className="dashboard-wrapper">
+      <div className="page-header">
+        <h2>Dashboard Overview</h2>
+        <p>Real-time analytics and inventory status</p>
       </div>
 
-      {/* Metrics Cards */}
+      {/* Metric Stat Cards */}
       <div className="stats-grid">
-        <div className="stat-card">
-          <h4>Total Revenue</h4>
-          <p className="stat-value">₹{stats.totalRevenue?.toLocaleString('en-IN')}</p>
+        <div className="stat-card revenue-card">
+          <span className="stat-title">Total Revenue</span>
+          <h3 className="stat-value">₹{stats.totalRevenue?.toLocaleString('en-IN')}</h3>
+          <span className="stat-subtitle">From all confirmed orders</span>
         </div>
 
         <div className="stat-card">
-          <h4>Total Orders</h4>
-          <p className="stat-value">{stats.totalOrders}</p>
+          <span className="stat-title">Total Orders</span>
+          <h3 className="stat-value">{stats.totalOrders}</h3>
+          <span className="stat-subtitle">Customer purchases</span>
         </div>
 
         <div className="stat-card">
-          <h4>Total Appliances</h4>
-          <p className="stat-value">{stats.totalProducts}</p>
+          <span className="stat-title">Appliances in Catalog</span>
+          <h3 className="stat-value">{stats.totalProducts}</h3>
+          <span className="stat-subtitle">Across all categories</span>
         </div>
 
         <div className="stat-card">
-          <h4>Registered Customers</h4>
-          <p className="stat-value">{stats.totalCustomers}</p>
+          <span className="stat-title">Registered Customers</span>
+          <h3 className="stat-value">{stats.totalCustomers}</h3>
+          <span className="stat-subtitle">Active accounts</span>
         </div>
       </div>
 
-      {/* Module Shortcuts */}
-      <h3 className="section-title">Quick Management Links</h3>
-      <div className="admin-menu-grid">
-        <Link to="/admin/categories" className="admin-menu-card">
-          <h4>Categories</h4>
-          <p>Organize appliances into Kitchen, Cooling, Laundry, etc.</p>
-        </Link>
+      {/* Quick Access Control Grid */}
+      <div className="quick-links-section">
+        <h3>Quick Operations</h3>
+        <div className="quick-grid">
+          <Link to="/admin/products" className="quick-card">
+            <h4>📦 Product Management</h4>
+            <p>Add new appliances, modify prices, update stock and descriptions.</p>
+          </Link>
 
-        <Link to="/admin/brands" className="admin-menu-card">
-          <h4>Brands</h4>
-          <p>Manage appliance manufacturers (LG, Samsung, Whirlpool, etc.)</p>
-        </Link>
+          <Link to="/admin/orders" className="quick-card">
+            <h4>🛒 Order Lifecycle</h4>
+            <p>Review customer shipping addresses and mark delivery statuses.</p>
+          </Link>
 
-        <Link to="/admin/products" className="admin-menu-card">
-          <h4>Products</h4>
-          <p>Create, update stock, pricing, and delete catalog items.</p>
-        </Link>
+          <Link to="/admin/categories" className="quick-card">
+            <h4>📑 Categories</h4>
+            <p>Create and edit appliance sections (Kitchen, Cooling, etc.).</p>
+          </Link>
 
-        <Link to="/admin/orders" className="admin-menu-card">
-          <h4>Orders</h4>
-          <p>Track order lifecycle and update delivery statuses.</p>
-        </Link>
-
-        <Link to="/admin/customers" className="admin-menu-card">
-          <h4>Customers</h4>
-          <p>Review customer directory and accounts.</p>
-        </Link>
+          <Link to="/admin/brands" className="quick-card">
+            <h4>🏷️ Brands</h4>
+            <p>Manage brand manufacturers (LG, Samsung, Whirlpool, IFB).</p>
+          </Link>
+        </div>
       </div>
     </div>
   );

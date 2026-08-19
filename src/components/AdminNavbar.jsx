@@ -7,7 +7,7 @@ function AdminNavbar({ admin, onAdminLogout }) {
 
   const handleLogout = () => {
     onAdminLogout();
-    navigate('/admin/login');
+    navigate('/admin');
   };
 
   if (!admin) return null;

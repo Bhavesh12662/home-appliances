@@ -2,12 +2,16 @@ import React, { createContext, useState, useEffect } from 'react';
 
 export const CartContext = createContext();
 
+// Inside CartContext.jsx
 export const CartProvider = ({ children }) => {
-  // Initialize cart state from browser storage if present
   const [cartItems, setCartItems] = useState(() => {
-    const savedCart = localStorage.getItem('cart');
-    return savedCart ? JSON.parse(savedCart) : [];
+    const saved = localStorage.getItem('cartItems');
+    return saved ? JSON.parse(saved) : [];
   });
+
+
+
+  // ... rest of provider
 
   // Sync cart changes with localStorage
   useEffect(() => {
@@ -57,6 +61,7 @@ export const CartProvider = ({ children }) => {
   // Clear all items after placing an order
   const clearCart = () => {
     setCartItems([]);
+    localStorage.removeItem('cartItems');
   };
 
   // Derived totals

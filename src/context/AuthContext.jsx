@@ -26,11 +26,13 @@ export const AuthProvider = ({ children }) => {
 
   // Logout handler
   const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-  };
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  localStorage.removeItem('cartItems'); // Clear previous user's cart
+  setUser(null);
+  setToken(null);
+  window.location.href = '/login';
+};
 
   return (
     <AuthContext.Provider value={{ user, token, login, logout, loading }}>

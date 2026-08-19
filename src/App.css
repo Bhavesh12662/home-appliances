@@ -33,102 +33,129 @@ button {
   margin: 0 auto;
 }
 
-/* ==========================================================================
-   2. NAVBAR
-   ========================================================================== */
-.main-navbar {
+/* Client Navbar */
+.client-navbar {
   background-color: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e5e7eb;
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .navbar-container {
-  max-width: 1280px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
-  height: 70px;
+  padding: 12px 20px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
 }
 
-.navbar-logo {
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: #1e3a8a;
+/* Brand Logo */
+.navbar-brand {
   display: flex;
   align-items: center;
   gap: 8px;
+  text-decoration: none;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #111827;
 }
 
-.navbar-links {
+.brand-logo-icon {
+  font-size: 1.5rem;
+}
+
+.brand-highlight {
+  color: #2563eb;
+}
+
+/* Menu & Navigation Links */
+.navbar-menu {
   display: flex;
   align-items: center;
   gap: 20px;
 }
 
 .nav-link {
-  font-weight: 500;
+  text-decoration: none;
   color: #4b5563;
-  transition: color 0.2s ease;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: color 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .nav-link:hover {
   color: #2563eb;
 }
 
+/* Cart Badge */
 .cart-link {
   position: relative;
-  display: flex;
-  align-items: center;
-  gap: 4px;
 }
 
-.cart-badge {
+.navbar-badge {
   background-color: #ef4444;
   color: #ffffff;
   font-size: 0.75rem;
   font-weight: 700;
-  border-radius: 9999px;
   padding: 2px 7px;
+  border-radius: 9999px;
   line-height: 1;
 }
 
-.nav-user-menu, .nav-auth-buttons {
+/* User & Guest Actions */
+.user-section, .guest-section {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-.nav-btn-register {
-  background-color: #2563eb;
-  color: #ffffff;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
-}
-
-.nav-btn-register:hover {
-  background-color: #1d4ed8;
-}
-
-.logout-btn {
+.user-profile-btn {
   background-color: #f3f4f6;
-  color: #ef4444;
-  padding: 6px 14px;
+  padding: 6px 12px;
   border-radius: 6px;
-  font-weight: 600;
-  transition: background-color 0.2s ease;
+  color: #1f2937;
 }
 
-.logout-btn:hover {
+.user-profile-btn:hover {
+  background-color: #e5e7eb;
+}
+
+.navbar-logout-btn {
+  background-color: transparent;
+  color: #dc2626;
+  border: 1px solid #fee2e2;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.navbar-logout-btn:hover {
   background-color: #fee2e2;
 }
 
+.nav-register-btn {
+  background-color: #2563eb;
+  color: #ffffff;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background-color 0.15s ease;
+}
+
+.nav-register-btn:hover {
+  background-color: #1d4ed8;
+}
 /* ==========================================================================
    3. AUTH FORMS (LOGIN & REGISTER)
    ========================================================================== */
