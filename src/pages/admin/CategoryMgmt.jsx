@@ -10,6 +10,7 @@ const CategoryMgmt = () => {
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  
 
   const config = {
     headers: { Authorization: `Bearer ${token}` }
