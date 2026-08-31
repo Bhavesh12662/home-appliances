@@ -71,4 +71,4 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 
 
 ## Live URL
-.(https://portfolio-website-one-nu-28.vercel.app/)
+.(https://home-appliances-nnhf.vercel.app/)
