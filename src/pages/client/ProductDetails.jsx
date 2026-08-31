@@ -96,10 +96,14 @@ const ProductDetails = () => {
                 <span>{quantity}</span>
                 <button onClick={() => handleQuantityChange('inc')} disabled={quantity >= product.stock}>+</button>
               </div>
-
               <button className="add-to-cart-btn" onClick={handleAddToCart}>
                 Add to Cart
               </button>
+               <Link to='/checkout'>
+              <button className="add-to-cart-btn" onClick={handleAddToCart}>
+                Buy Now
+              </button>
+              </Link>
             </div>
           )}
 

@@ -124,6 +124,7 @@ const Checkout = () => {
               value={shippingAddress.street}
               onChange={handleChange}
               placeholder="123 Main Street, Apartment 4B"
+              className="field-error"
             />
             {errors.street && <span className="field-error">{errors.street}</span>}
           </div>
@@ -137,6 +138,7 @@ const Checkout = () => {
                 value={shippingAddress.city}
                 onChange={handleChange}
                 placeholder="Surat"
+                className="field-error"
               />
               {errors.city && <span className="field-error">{errors.city}</span>}
             </div>
@@ -149,6 +151,7 @@ const Checkout = () => {
                 value={shippingAddress.state}
                 onChange={handleChange}
                 placeholder="Gujarat"
+                className="field-error"
               />
               {errors.state && <span className="field-error">{errors.state}</span>}
             </div>
@@ -163,6 +166,7 @@ const Checkout = () => {
                 value={shippingAddress.postalCode}
                 onChange={handleChange}
                 placeholder="395007"
+                className="field-error"
               />
               {errors.postalCode && <span className="field-error">{errors.postalCode}</span>}
             </div>
@@ -175,6 +179,7 @@ const Checkout = () => {
                 value={shippingAddress.phone}
                 onChange={handleChange}
                 placeholder="9876543210"
+                className="field-error"
               />
               {errors.phone && <span className="field-error">{errors.phone}</span>}
             </div>
@@ -192,17 +197,7 @@ const Checkout = () => {
               />
               Cash on Delivery (COD)
             </label>
-
-            <label className="radio-label">
-              <input
-                type="radio"
-                name="paymentMethod"
-                value="Online Payment (UPI/Card)"
-                checked={paymentMethod === 'Online Payment (UPI/Card)'}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-              />
-              Online Payment (UPI / Net Banking / Card)
-            </label>
+            <label>UPI is coming soon!</label>
           </div>
 
           <button type="submit" className="place-order-btn" disabled={loading}>

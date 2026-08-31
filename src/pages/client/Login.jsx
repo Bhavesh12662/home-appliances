@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../../context/AuthContext';
+import './Login.css';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -79,6 +80,7 @@ const Login = () => {
             value={formData.email}
             onChange={handleChange}
             placeholder="john@example.com"
+            className="field-error"
           />
           {errors.email && <span className="field-error">{errors.email}</span>}
         </div>
@@ -91,16 +93,17 @@ const Login = () => {
             value={formData.password}
             onChange={handleChange}
             placeholder="••••••••"
+            className="field-error"
           />
           {errors.password && <span className="field-error">{errors.password}</span>}
         </div>
 
-        <button type="submit" disabled={isSubmitting}>
+        <button type="submit" disabled={isSubmitting} className='button'>
           {isSubmitting ? 'Logging in...' : 'Login'}
         </button>
       </form>
 
-      <p>
+      <p className='register'>
         Don't have an account? <Link to="/register">Register here</Link>
       </p>
     </div>

@@ -26,7 +26,7 @@ const ProductCard = ({ product }) => {
 
         <Link to={`/product/${product._id}`} className="view-details-btn">
           View Details
-        </Link>
+        </Link>        
       </div>
     </div>
   );
