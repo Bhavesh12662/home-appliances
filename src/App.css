@@ -156,6 +156,141 @@ button {
 .nav-register-btn:hover {
   background-color: #1d4ed8;
 }
+/* =========================
+   Mobile Menu Button
+========================= */
+
+.mobile-menu-btn {
+  display: none;
+  width: 42px;
+  height: 38px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 7px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+}
+
+.mobile-menu-btn span {
+  display: block;
+  width: 26px;
+  height: 3px;
+  background-color: #111827;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+}
+
+/* =========================
+   Mobile Responsive
+========================= */
+
+@media (max-width: 768px) {
+
+  .navbar-container {
+    padding: 12px 16px;
+    position: relative;
+  }
+
+  /* Show hamburger */
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  /* Mobile menu */
+  .navbar-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+
+    background-color: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+
+    padding: 16px 20px;
+
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Open mobile menu */
+  .navbar-menu.mobile-open {
+    display: flex;
+  }
+
+  /* Mobile navigation links */
+  .navbar-menu > .nav-link {
+    padding: 12px 4px;
+    width: 100%;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  /* User section */
+  .user-section,
+  .guest-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    width: 100%;
+  }
+
+  .user-section .nav-link,
+  .guest-section .nav-link {
+    padding: 12px 4px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  /* Profile button */
+  .user-profile-btn {
+    margin: 6px 0;
+    padding: 10px 12px;
+  }
+
+  /* Logout */
+  .navbar-logout-btn {
+    margin-top: 8px;
+    width: 100%;
+    padding: 10px 12px;
+  }
+
+  /* Register */
+  .nav-register-btn {
+    margin-top: 8px;
+    text-align: center;
+    padding: 10px 16px;
+  }
+
+  /* Cart badge */
+  .navbar-badge {
+    margin-left: 4px;
+  }
+}
+
+/* =========================
+   Small Phones
+========================= */
+
+@media (max-width: 400px) {
+
+  .navbar-container {
+    padding: 10px 14px;
+  }
+
+  .navbar-brand {
+    font-size: 1.2rem;
+  }
+
+  .mobile-menu-btn {
+    width: 40px;
+  }
+}
+
 /* ==========================================================================
    3. AUTH FORMS (LOGIN & REGISTER)
    ========================================================================== 

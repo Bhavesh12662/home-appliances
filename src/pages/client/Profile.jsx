@@ -100,8 +100,8 @@ const Profile = () => {
             <p>{user?.phone || 'N/A'}</p>
           </div>
           <div className="profile-field">
-            <label>Role:</label>
-            <p>{user?.role || 'Customer'}</p>
+            <label>User ID:</label>
+            <p>{user?.id || 'Customer'}</p>
           </div>
         </div>
 
