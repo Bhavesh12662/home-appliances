@@ -15,8 +15,11 @@
     padding: 10px;
     border: 1px solid black;
     border-radius: 8px;
-    background-color: lightyellow;
+    background-color: rgb(106, 144, 194);
     font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;   
+    color: rgb(2, 2, 2);
+    font-weight:500 ;
+    text-align: left;
 }
 .field-error{
     margin: 5px;

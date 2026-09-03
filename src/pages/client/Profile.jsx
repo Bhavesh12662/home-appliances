@@ -117,6 +117,7 @@ const Profile = () => {
                 value={passwordData.currentPassword}
                 onChange={handleChange}
                 placeholder="••••••••"
+                className="field-error"
               />
               {errors.currentPassword && <span className="field-error">{errors.currentPassword}</span>}
             </div>
@@ -129,6 +130,7 @@ const Profile = () => {
                 value={passwordData.newPassword}
                 onChange={handleChange}
                 placeholder="••••••••"
+                className="field-error"
               />
               {errors.newPassword && <span className="field-error">{errors.newPassword}</span>}
             </div>
@@ -141,6 +143,7 @@ const Profile = () => {
                 value={passwordData.confirmNewPassword}
                 onChange={handleChange}
                 placeholder="••••••••"
+                className="field-error"
               />
               {errors.confirmNewPassword && <span className="field-error">{errors.confirmNewPassword}</span>}
             </div>
