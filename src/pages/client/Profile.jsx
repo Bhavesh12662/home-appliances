@@ -148,7 +148,7 @@ const Profile = () => {
               {errors.confirmNewPassword && <span className="field-error">{errors.confirmNewPassword}</span>}
             </div>
 
-            <button type="submit" disabled={loading} className="btn-primary">
+            <button type="submit" disabled={loading} className="btn-update">
               {loading ? 'Updating...' : 'Update Password'}
             </button>
           </form>
