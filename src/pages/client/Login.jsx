@@ -67,6 +67,7 @@ const Login = () => {
   };
 
   return (
+    <div className="auth-container1">
     <div className="auth-container">
       <h2>Login to Your Account</h2>
       {serverError && <p className="error-banner">{serverError}</p>}
@@ -107,6 +108,7 @@ const Login = () => {
         Don't have an account?
         <p  className='register1'> <Link to="/register">Register here</Link></p>
       </p>  
+    </div>
     </div>
   );
 };
