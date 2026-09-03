@@ -104,8 +104,9 @@ const Login = () => {
       </form>
 
       <p className='register'>
-        Don't have an account? <Link to="/register">Register here</Link>
-      </p>
+        Don't have an account?
+        <p  className='register1'> <Link to="/register">Register here</Link></p>
+      </p>  
     </div>
   );
 };
